@@ -1,10 +1,12 @@
 #![allow(warnings)]
 use std::thread;
+mod arc;
 mod atomics;
 mod basic;
 mod channel;
 mod lock;
 mod mem_order;
+
 fn main() {
   let numbers = vec![1, 2, 3];
 
