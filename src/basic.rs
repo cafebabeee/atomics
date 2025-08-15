@@ -2,8 +2,11 @@
 pub mod test {
   use std::collections::VecDeque;
   use std::sync::Mutex;
+  use std::thread::sleep;
   use std::time::Duration;
   use std::{sync::Arc, thread};
+
+  use indicatif::{ProgressBar, ProgressStyle};
   #[test]
   fn test_add() {
     assert_eq!(2 + 2, 4);
@@ -95,5 +98,27 @@ pub mod test {
         thread::sleep(Duration::from_secs(1));
       }
     });
+  }
+
+  #[test]
+  fn test_indicatif() {
+    let total = 100;
+    // 创建进度条
+    let pb = ProgressBar::new(total);
+    // 设置进度条样式
+    pb.set_style(
+      ProgressStyle::default_bar()
+        .template("[{elapsed_precise}] {bar:40.cyan/blue} {pos}/{len} ({percent}%)")
+        .unwrap()
+        .progress_chars("#>-"),
+    );
+
+    // 模拟耗时操作
+    for _ in 0..=total {
+      sleep(Duration::from_millis(100));
+      pb.inc(1); // 进度加一
+    }
+
+    pb.finish_with_message("Done!");
   }
 }

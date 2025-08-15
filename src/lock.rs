@@ -1,3 +1,6 @@
+pub(crate) mod condvar;
+pub(crate) mod mutex;
+mod rwlock;
 mod spin;
 mod unsafe_spin;
 

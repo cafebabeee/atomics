@@ -3,8 +3,9 @@ mod eg;
 #[cfg(test)]
 pub mod tests {
   use std::sync::atomic::{
-    AtomicBool,
-    Ordering::{Acquire, Release},
+    AtomicBool, AtomicUsize,
+    Ordering::{self, Acquire, Release},
+    compiler_fence,
   };
   use std::thread;
   use std::time::Duration;
@@ -56,5 +57,29 @@ pub mod tests {
   fn test_fence() {
     use super::eg::order_fence;
     order_fence();
+  }
+
+  #[test]
+  fn test_compiler_fence() {
+    let locked = AtomicBool::new(false);
+    let counter = AtomicUsize::new(0);
+    thread::scope(|s| {
+      for _ in 0..4 {
+        s.spawn(|| {
+          for _ in 0..1_000_000 {
+            while locked.swap(true, Ordering::Relaxed) {}
+            compiler_fence(Ordering::Acquire);
+
+            let old = counter.load(Ordering::Relaxed);
+            counter.store(old + 1, Ordering::Relaxed);
+
+            compiler_fence(Ordering::Release);
+
+            locked.store(false, Ordering::Relaxed);
+          }
+        });
+      }
+    });
+    dbg!(counter.into_inner());
   }
 }
